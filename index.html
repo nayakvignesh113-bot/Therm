@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thermo–Heat–Mass · Interactive Engineering Companion</title>
+<meta name="description" content="Interactive thermodynamics, heat transfer and mass transfer: theory, animations, solvers with real property data, MCQs, descriptive and hinted numerical problems.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌡️</text></svg>">
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<script defer src="vendor/katex/katex.min.js"></script>
+<script defer src="vendor/katex/contrib/auto-render.min.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="side">
+    <div class="brand"><div class="logo">🌡️</div><div>Thermo·Heat·Mass<small>Interactive engineering companion</small></div></div>
+    <input id="q" class="search" type="search" placeholder="Search topics, formulas, tools… (Enter)">
+    <nav id="nav"></nav>
+    <div style="padding:14px 10px"><button class="btn sm ghost themebtn" style="color:#cfd8e3;border-color:#2b3a4b">🌓 Light / dark</button></div>
+  </aside>
+  <div style="flex:1;min-width:0">
+    <div class="topbar"><button id="menu" class="btn sm">☰</button><b>Thermo·Heat·Mass</b><span style="flex:1"></span><button class="btn sm themebtn" aria-label="Toggle theme">🌓</button></div>
+    <main id="main"><p>Loading…</p><noscript>This site needs JavaScript.</noscript></main>
+  </div>
+</div>
+<script src="js/core.js"></script>
+<script src="js/props.js"></script>
+<script src="js/app.js"></script>
+<script src="js/views.js"></script>
+<script src="js/calc/thermo.js"></script>
+<script src="js/calc/cycles.js"></script>
+<script src="js/calc/heat.js"></script>
+<script src="js/calc/heat2.js"></script>
+<script src="js/calc/mass.js"></script>
+<script src="js/calc/formula.js"></script>
+<script src="js/anim/anim_thermo.js"></script>
+<script src="js/anim/anim_heat.js"></script>
+<script src="js/content/t1.js"></script>
+<script src="js/content/t2.js"></script>
+<script src="js/content/t3.js"></script>
+<script src="js/content/t4.js"></script>
+<script src="js/content/h1.js"></script>
+<script src="js/content/h2.js"></script>
+<script src="js/content/h3.js"></script>
+<script src="js/content/m1.js"></script>
+<script src="js/handbook.js"></script>
+</body>
+</html>
