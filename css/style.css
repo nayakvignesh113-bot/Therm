@@ -126,3 +126,24 @@ footer{margin-top:50px;color:var(--muted);font-size:.82rem;border-top:1px solid 
 .printonly{display:none}
 @media print{#side,.topbar,.tabs,.btn{display:none!important}main{max-width:none}}
 @media(max-width:900px){.tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.tabs button{white-space:nowrap;padding:8px 10px}.hero{padding:24px 18px}.hero h1{font-size:1.6rem}.out{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+/* lesson player */
+.ls-shell{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.ls-shell:fullscreen{overflow:auto}
+.ls-stage{min-height:430px;padding:26px 30px;position:relative;background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%)}
+.ls-stage canvas.plot{margin:auto}
+.ls-title{text-align:center;padding:60px 10px}
+.ls-title h2{font-size:2rem;margin:.3em 0}.ls-title p{color:var(--muted);font-size:1.1rem}
+.ls-kicker{display:inline-block;background:var(--accsoft);color:var(--acc);font-weight:700;border-radius:99px;padding:4px 12px;font-size:.8rem}
+.ls-h{margin:0 0 14px;font-size:1.25rem}
+.ls-bul{font-size:1.12rem;line-height:1.7}.ls-bul li{transition:opacity .6s;margin:.35em 0}
+.ls-eq{font-size:1.35rem;padding:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+.ls-terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px 18px;margin-top:14px;font-size:1rem}
+.ls-anim .ctrl{font-size:.9rem}
+.ls-q{font-size:1.15rem;margin-bottom:8px}
+.ls-cap{background:#0f172a;color:#f1f5f9;padding:12px 20px;font-size:1.05rem;min-height:56px;line-height:1.5}
+.ls-bar{display:flex;gap:3px;padding:6px 10px;background:var(--panel2)}
+.ls-seg{flex:1;height:8px;border:0;border-radius:4px;background:var(--line2);cursor:pointer;padding:0}
+.ls-seg.on{background:var(--acc)}.ls-seg.q{background:var(--warm)}.ls-seg.q.on{background:var(--green)}
+.ls-ctl{padding:8px 14px;margin:0;border-top:1px solid var(--line)}
+.ls-links{display:flex;flex-wrap:wrap;gap:10px}
+@media(max-width:700px){.ls-stage{padding:16px;min-height:300px}.ls-bul{font-size:1rem}.ls-eq{font-size:1.05rem}.ls-title{padding:30px 6px}.ls-title h2{font-size:1.4rem}}

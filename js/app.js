@@ -21,7 +21,7 @@
     const nav = $('#nav'); nav.innerHTML = '';
     const link = (href, txt, dot) => h('a', { href: '#/' + href, 'data-r': href }, dot ? h('span', { class: 'dot', style: 'background:' + dot }) : null, txt);
     nav.append(link('', '🏠  Home'), link('map', '🗺️  Field map & learning paths'), link('method', '🧭  How to solve any problem'),
-      link('solve', '🧮  Solver workbench'), link('anim', '🎞️  Animation lab'), link('practice', '📝  Practice & quizzes'),
+      link('lessons', '🎬  Narrated lessons'), link('solve', '🧮  Solver workbench'), link('anim', '🎞️  Animation lab'), link('practice', '📝  Practice & quizzes'),
       link('databook', '📘  HT & MT Data Book'), link('data', '📚  Property tables (all)'), link('progress', '📈  My progress'));
     for (const [pk, p] of Object.entries(U.parts)) {
       const d = h('details', { open: '' }, h('summary', {}, p.name));
@@ -149,7 +149,7 @@
       h('div', { class: 'stats' }, [[nm, 'modules'], [Object.keys(U.calcs).length, 'solvers'], [Object.keys(U.anims).length, 'animations'], [nq, 'MCQs'], [nd, 'descriptive Qs'], [nn, 'numerical generators']].map(([n, l]) => h('div', {}, h('b', {}, n), l))));
     el.append(hero);
     el.append(h('div', { class: 'grid' },
-      tile('#/map', '🗺️ Start here: the field map', 'How thermodynamics, heat transfer and mass transfer fit together, and suggested learning paths.'),
+      tile('#/lessons', '🎬 Narrated lessons', 'A 3–5 minute animated, narrated lesson for every module, with quick-check questions that pause until you answer. Works offline.'), tile('#/map', '🗺️ Start here: the field map', 'How thermodynamics, heat transfer and mass transfer fit together, and suggested learning paths.'),
       tile('#/method', '🧭 How to solve any problem', 'A systematic method and a decision guide that routes any problem to the right theory and solver.'),
       tile('#/solve', '🧮 Solver workbench', 'Steam & refrigerant tables, cycles, conduction, fins, transient, convection, exchangers, radiation, psychrometry, combustion, diffusion, and a universal formula solver.'),
       tile('#/anim', '🎞️ Animation lab', 'Piston–cylinders, cycles on P–v/T–s, boundary layers, transient conduction, boiling, heat exchangers, radiation, diffusion.'),
@@ -168,12 +168,13 @@
     prog.read[id] = 1; saveProg();
     el.append(h('div', { class: 'crumbs' }, h('a', { href: '#/map' }, U.parts[m.part].name), ' › ', m.title));
     el.append(h('h1', {}, m.title)); if (m.sub) el.append(h('p', { class: 'muted' }, m.sub));
-    const tabs = [['fund', '① Fundamentals'], ['tech', '② Technical'], ['adv', '③ Advanced'], ['prac', '⚙️ Practice & industry'], ['eqs', '∑ Formula sheet'], ['db', '📘 Data book'], ['vis', '🎞️ Animations & solvers'], ['qs', '📝 Questions']]
-      .filter(([k]) => k === 'eqs' ? m.eqs : k === 'db' ? (U.DBMOD || {})[m.id] : k === 'vis' ? (m.anims || m.calcs) : k === 'qs' ? (m.mcq || m.desc || m.num) : m[k]);
+    const tabs = [['lesson', '🎬 Lesson'], ['fund', '① Fundamentals'], ['tech', '② Technical'], ['adv', '③ Advanced'], ['prac', '⚙️ Practice & industry'], ['eqs', '∑ Formula sheet'], ['db', '📘 Data book'], ['vis', '🎞️ Animations & solvers'], ['qs', '📝 Questions']]
+      .filter(([k]) => k === 'lesson' ? U.LESSONS[m.id] : k === 'eqs' ? m.eqs : k === 'db' ? (U.DBMOD || {})[m.id] : k === 'vis' ? (m.anims || m.calcs) : k === 'qs' ? (m.mcq || m.desc || m.num) : m[k]);
     const bar = h('div', { class: 'tabs' }), body = h('div', { class: 'prose' });
     const show = k => {
       cleanups.forEach(f => { try { f(); } catch (e) { } }); cleanups = [];
       $$('button', bar).forEach(b => b.classList.toggle('on', b.dataset.k === k)); body.innerHTML = '';
+      if (k === 'lesson') { location.hash = '#/lesson/' + id; return; }
       if (k === 'eqs') body.append(U.renderEqs(m.eqs));
       else if (k === 'db') { body.append(h('p', { html: 'Data-book pages you will need for this topic, in the order you normally use them. Each page tells you <b>what it is for, at which temperature to read it, and how to read it</b>. Not sure? Use the <a href="#/databook/nav">Navigator</a> and the <a href="#/databook/rules">property-temperature rules</a>.' })); const ul = h('div', { class: 'grid' }); U.DBMOD[m.id].forEach(i => { const p = U.DB[i]; ul.append(h('a', { class: 'card tile', href: '#/databook/' + i }, h('h3', { html: U.dbLink(i).replace(/<[^>]+>/g, '') }), h('p', {}, p.use))); }); body.append(ul); }
       else if (k === 'vis') {
@@ -208,7 +209,7 @@
     tabs.forEach(([k, l]) => bar.append(h('button', { 'data-k': k, onclick: () => { show(k); history.replaceState(null, '', '#/m/' + id + '/' + k); } }, l)));
     el.append(bar, body);
     const want = location.hash.split('/')[3];
-    show(tabs.some(t => t[0] === want) ? want : tabs[0][0]);
+    show(tabs.some(t => t[0] === want && want !== 'lesson') ? want : 'fund');
   };
   U.inlinePlots = {};
 
@@ -306,5 +307,16 @@
     $('#menu').onclick = () => $('#side').classList.toggle('open');
     $$('.themebtn').forEach(b => b.onclick = () => { setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'); route(); });
     route();
+    // ---- offline app (PWA) ----
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        const say = t => { const o = $('#offline'); if (o) o.textContent = t; };
+        navigator.serviceWorker.ready.then(r => { say('✓ Available offline'); });
+        reg.addEventListener('updatefound', () => { say('⏳ Downloading for offline use…'); const w = reg.installing; w && w.addEventListener('statechange', () => { if (w.state === 'activated') { say('✓ Updated — available offline'); } }); });
+      }).catch(() => {});
+    }
+    let deferred = null; const ib = $('#installbtn');
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; ib.style.display = ''; });
+    ib.onclick = async () => { if (!deferred) return; deferred.prompt(); await deferred.userChoice; deferred = null; ib.style.display = 'none'; };
   });
 })();

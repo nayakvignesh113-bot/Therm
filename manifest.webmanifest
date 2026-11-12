@@ -1,0 +1,14 @@
+{
+  "name": "Thermo · Heat · Mass — interactive engineering companion",
+  "short_name": "ThermoHeatMass",
+  "description": "Thermodynamics, heat & mass transfer: theory, animations, solvers, data book, narrated lessons and practice — works offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14202e",
+  "theme_color": "#c2410c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

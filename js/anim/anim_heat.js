@@ -178,7 +178,7 @@
   const boilModel = dTe => { // water 1 atm, polished copper approx
     const qn = 4.53e1 * Math.pow(dTe, 3) * 1.0 * 1; // calibrated-ish so qmax ~1.26e6 at ~30 K: Rohsenow coefficient for water/Cu at 1 atm ≈ 45 W/m²K³
     const qmax = 1.26e6, dTcr = Math.cbrt(qmax / 45.3), qmin = 1.9e4, dTmin = 120;
-    if (dTe < 5) return 1.31 * Math.pow(dTe, 4 / 3) * dTe * 1.0 + 0.0; if (dTe <= dTcr) return qn; if (dTe < dTmin) { const f = Math.log(dTe / dTcr) / Math.log(dTmin / dTcr); return Math.exp(Math.log(qmax) * (1 - f) + Math.log(qmin) * f); }
+    if (dTe < 5) return 45.3 * 125 * Math.pow(dTe / 5, 4 / 3); // natural convection, continuous at onset if (dTe <= dTcr) return qn; if (dTe < dTmin) { const f = Math.log(dTe / dTcr) / Math.log(dTmin / dTcr); return Math.exp(Math.log(qmax) * (1 - f) + Math.log(qmin) * f); }
     return qmin * Math.pow(dTe / dTmin, 1.6);
   };
   U.boilModel = boilModel;
