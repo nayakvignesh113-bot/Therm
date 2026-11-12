@@ -22,7 +22,7 @@
     const link = (href, txt, dot) => h('a', { href: '#/' + href, 'data-r': href }, dot ? h('span', { class: 'dot', style: 'background:' + dot }) : null, txt);
     nav.append(link('', '🏠  Home'), link('map', '🗺️  Field map & learning paths'), link('method', '🧭  How to solve any problem'),
       link('solve', '🧮  Solver workbench'), link('anim', '🎞️  Animation lab'), link('practice', '📝  Practice & quizzes'),
-      link('data', '📚  Data handbook'), link('progress', '📈  My progress'));
+      link('databook', '📘  HT & MT Data Book'), link('data', '📚  Property tables (all)'), link('progress', '📈  My progress'));
     for (const [pk, p] of Object.entries(U.parts)) {
       const d = h('details', { open: '' }, h('summary', {}, p.name));
       U.modules.filter(m => m.part === pk).forEach(m => d.append(link('m/' + m.id, m.title, p.color)));
@@ -101,6 +101,7 @@
   U.renderCalc = (c, el) => {
     el.append(h('h2', {}, c.title));
     if (c.desc) el.append(h('div', { class: 'prose', html: c.desc }));
+    if (U.DBCALC && U.DBCALC[c.id]) el.append(h('p', { class: 'small', html: '📘 <b>Data-book pages behind this solver:</b> ' + U.DBCALC[c.id].map(U.dbLink).join(' · ') }));
     if (c.mount) { const r = c.mount(el); U.math(el); if (typeof r === 'function') onLeave(r); return; }
     const form = h('div', { class: 'form' }), vals = {};
     const fields = {};
@@ -153,7 +154,7 @@
       tile('#/solve', '🧮 Solver workbench', 'Steam & refrigerant tables, cycles, conduction, fins, transient, convection, exchangers, radiation, psychrometry, combustion, diffusion, and a universal formula solver.'),
       tile('#/anim', '🎞️ Animation lab', 'Piston–cylinders, cycles on P–v/T–s, boundary layers, transient conduction, boiling, heat exchangers, radiation, diffusion.'),
       tile('#/practice', '📝 Practice', 'Quiz mode, descriptive questions with model answers, and randomised numericals with stepwise hints.'),
-      tile('#/data', '📚 Data handbook', 'Steam, refrigerant, air, gas, liquid and solid property tables, emissivities, erf, Bessel and one-term coefficients.')));
+      tile('#/databook', '📘 Heat & Mass Transfer Data Book', 'Tables, Heisler/F-factor/ε–NTU/fin/view-factor/Moody charts and correlation constants — every page says what it is for and how to read it.'), tile('#/data', '📚 Property tables', 'Steam, refrigerant, air, gas, liquid and solid tables, emissivities, erf, Bessel, one-term coefficients — CSV download.')));
     for (const [pk, p] of Object.entries(U.parts)) {
       el.append(h('h2', {}, p.name));
       el.append(h('div', { class: 'grid' }, U.modules.filter(m => m.part === pk).map(m => tile('#/m/' + m.id, m.title, m.sub, pk))));
@@ -167,13 +168,14 @@
     prog.read[id] = 1; saveProg();
     el.append(h('div', { class: 'crumbs' }, h('a', { href: '#/map' }, U.parts[m.part].name), ' › ', m.title));
     el.append(h('h1', {}, m.title)); if (m.sub) el.append(h('p', { class: 'muted' }, m.sub));
-    const tabs = [['fund', '① Fundamentals'], ['tech', '② Technical'], ['adv', '③ Advanced'], ['prac', '⚙️ Practice & industry'], ['eqs', '∑ Formula sheet'], ['vis', '🎞️ Animations & solvers'], ['qs', '📝 Questions']]
-      .filter(([k]) => k === 'eqs' ? m.eqs : k === 'vis' ? (m.anims || m.calcs) : k === 'qs' ? (m.mcq || m.desc || m.num) : m[k]);
+    const tabs = [['fund', '① Fundamentals'], ['tech', '② Technical'], ['adv', '③ Advanced'], ['prac', '⚙️ Practice & industry'], ['eqs', '∑ Formula sheet'], ['db', '📘 Data book'], ['vis', '🎞️ Animations & solvers'], ['qs', '📝 Questions']]
+      .filter(([k]) => k === 'eqs' ? m.eqs : k === 'db' ? (U.DBMOD || {})[m.id] : k === 'vis' ? (m.anims || m.calcs) : k === 'qs' ? (m.mcq || m.desc || m.num) : m[k]);
     const bar = h('div', { class: 'tabs' }), body = h('div', { class: 'prose' });
     const show = k => {
       cleanups.forEach(f => { try { f(); } catch (e) { } }); cleanups = [];
       $$('button', bar).forEach(b => b.classList.toggle('on', b.dataset.k === k)); body.innerHTML = '';
       if (k === 'eqs') body.append(U.renderEqs(m.eqs));
+      else if (k === 'db') { body.append(h('p', { html: 'Data-book pages you will need for this topic, in the order you normally use them. Each page tells you <b>what it is for, at which temperature to read it, and how to read it</b>. Not sure? Use the <a href="#/databook/nav">Navigator</a> and the <a href="#/databook/rules">property-temperature rules</a>.' })); const ul = h('div', { class: 'grid' }); U.DBMOD[m.id].forEach(i => { const p = U.DB[i]; ul.append(h('a', { class: 'card tile', href: '#/databook/' + i }, h('h3', { html: U.dbLink(i).replace(/<[^>]+>/g, '') }), h('p', {}, p.use))); }); body.append(ul); }
       else if (k === 'vis') {
         (m.anims || []).forEach(a => { const A = U.anims[a]; if (!A) return; const c = h('div', { class: 'card' }, h('h3', {}, '🎞️ ' + A.title)); body.append(c); U.renderAnim(A, c, true); });
         if (m.calcs) body.append(h('h3', {}, 'Solvers for this topic'), h('div', { class: 'grid' }, m.calcs.filter(c => U.calcs[c]).map(c => tile('#/solve/' + c, '🧮 ' + U.calcs[c].title, U.calcs[c].cat))));

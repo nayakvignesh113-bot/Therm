@@ -8,7 +8,7 @@
     el.append(h('div', { class: 'ctrl' }, h('button', { class: 'btn sm', onclick: () => { const a = h('a', { href: URL.createObjectURL(new Blob([csv], { type: 'text/csv' })), download: name + '.csv' }); document.body.append(a); a.click(); a.remove(); } }, '⬇ Download CSV (opens in Excel)'), h('button', { class: 'btn sm ghost', onclick: () => window.print() }, '🖨 Print')));
     el.append(h('div', { class: 'tablewrap', html: '<table class="num"><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>' + rows.map(r => '<tr>' + r.map(x => `<td>${x}</td>`).join('') + '</tr>').join('') + '</table>' }));
   };
-  const T = {};
+  const T = {}; U.HB = T;
   const satTable = key => async el => {
     const F = await U.fluid(key); const lo = Math.ceil(F.Tmin - K), hi = Math.floor(F.Tc - K - 0.5);
     const step = key === 'water' ? 5 : 2; const Ts = []; for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) Ts.push(t); if (key === 'water') Ts.unshift(0.01);
