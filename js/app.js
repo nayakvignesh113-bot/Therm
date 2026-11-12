@@ -22,7 +22,7 @@
     const link = (href, txt, dot) => h('a', { href: '#/' + href, 'data-r': href }, dot ? h('span', { class: 'dot', style: 'background:' + dot }) : null, txt);
     nav.append(link('', '🏠  Home'), link('map', '🗺️  Field map & learning paths'), link('method', '🧭  How to solve any problem'),
       link('lessons', '🎬  Narrated lessons'), link('solve', '🧮  Solver workbench'), link('anim', '🎞️  Animation lab'), link('practice', '📝  Practice & quizzes'),
-      link('databook', '📘  HT & MT Data Book'), link('data', '📚  Property tables (all)'), link('progress', '📈  My progress'));
+      link('databook', '📘  HT & MT Data Book'), link('data', '📚  Property tables (all)'), link('progress', '📈  My progress'), link('signin', '👤  Student sign-in'), link('teacher', '👩‍🏫  Instructor dashboard'));
     for (const [pk, p] of Object.entries(U.parts)) {
       const d = h('details', { open: '' }, h('summary', {}, p.name));
       U.modules.filter(m => m.part === pk).forEach(m => d.append(link('m/' + m.id, m.title, p.color)));
@@ -48,7 +48,7 @@
         if (done) return; done = true;
         b.classList.add(i === a ? 'right' : 'wrong'); ol.children[a].classList.add('right');
         ex_.innerHTML = `<div class="${i === a ? 'sol' : 'hint'}"><b>${i === a ? '✔ Correct.' : '✘ Not quite — answer: ' + String.fromCharCode(65 + a)}</b> ${ex || ''}</div>`; U.math(ex_);
-        if (key) { prog.mcq[key] = i === a ? 1 : (prog.mcq[key] === 1 ? 1 : 0); saveProg(); }
+        if (key) { prog.mcq[key] = i === a ? 1 : (prog.mcq[key] === 1 ? 1 : 0); saveProg(); U.track && U.track({ kind: 'mcq', module: key.split(':')[0], item: key, correct: i === a }); }
         box.dispatchEvent(new CustomEvent('answered', { detail: i === a, bubbles: true }));
       }
       });
@@ -85,6 +85,7 @@
             const x = parseFloat(o.i.value.replace(/,/g, '').replace(/×10\^?/, 'e')); const ok = isFinite(x) && Math.abs(x - o.v) <= Math.abs(o.v) * o.tol + 1e-12;
             all = all && ok; fb.append(h('span', { class: 'pill ' + (ok ? 'ok' : 'no') }, (ok ? '✔ ' : '✘ ') + o.l.replace(/<[^>]+>/g, '')), ' ');
           });
+          U.track && U.track({ kind: 'num', module: key.split(':')[0], item: key, correct: all, data: { tries: 1 } });
           if (all) { prog.num[key] = 1; saveProg(); fb.append(h('b', {}, ' Excellent — all within ±' + (ins[0].tol * 100) + '%.')); }
           else fb.append(h('span', { class: 'muted small' }, ' Tolerance ±' + (ins[0].tol * 100) + '%. Use a hint or check units.'));
         }
@@ -173,6 +174,7 @@
     const bar = h('div', { class: 'tabs' }), body = h('div', { class: 'prose' });
     const show = k => {
       cleanups.forEach(f => { try { f(); } catch (e) { } }); cleanups = [];
+      if (k !== 'lesson' && U.track) U.track({ kind: 'view', module: id, item: k });
       $$('button', bar).forEach(b => b.classList.toggle('on', b.dataset.k === k)); body.innerHTML = '';
       if (k === 'lesson') { location.hash = '#/lesson/' + id; return; }
       if (k === 'eqs') body.append(U.renderEqs(m.eqs));
@@ -245,7 +247,7 @@
       area.innerHTML = ''; const set = shuffle(filt(all)).slice(0, +nSel.value); let got = 0, ans = 0;
       if (!set.length) { area.append(h('p', {}, 'No MCQs for this selection.')); return; }
       const sc = h('div', { class: 'card score' }, 'Score: 0 / ' + set.length); area.append(sc);
-      area.addEventListener('answered', e => { ans++; if (e.detail) got++; sc.textContent = `Score: ${got} / ${set.length}` + (ans === set.length ? `  —  ${Math.round(100 * got / set.length)}% ${got / set.length >= .8 ? '🎉 Excellent' : got / set.length >= .5 ? '👍 Good — review the misses' : '📖 Revisit the theory tabs'}` : ''); });
+      area.addEventListener('answered', e => { ans++; if (e.detail) got++; if (ans === set.length && U.track) U.track({ kind: 'quiz', module: selMod.value || selPart.value || 'all', score: got, total: set.length }); sc.textContent = `Score: ${got} / ${set.length}` + (ans === set.length ? `  —  ${Math.round(100 * got / set.length)}% ${got / set.length >= .8 ? '🎉 Excellent' : got / set.length >= .5 ? '👍 Good — review the misses' : '📖 Revisit the theory tabs'}` : ''); });
       set.forEach((x, i) => area.append(U.renderMCQ(x.q, x.key, i))); U.math(area);
     };
     const drill = async () => { area.innerHTML = 'Loading…'; await U.need('water', 'r134a', 'igas', 'trans'); shuffle(filt(nums)).slice(0, +nSel.value).forEach((x, i) => { area.append(h('div', { class: 'small muted' }, x.m.title)); area.append(U.renderNum(x.g, x.key, i)); }); };

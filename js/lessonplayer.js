@@ -55,7 +55,7 @@
   /* ---------- player ---------- */
   const play = (el, id) => {
     const m = U.modById[id], sc = U.LESSONS[id]; if (!sc) { el.append(h('p', {}, 'No lesson yet.')); return; }
-    const scenes = sc.map(s => s[0] === 'q' ? ['q', m.mcq[s[1]], s[2]] : s);
+    const scenes = sc.map(s => s[0] === 'q' ? ['q', m.mcq[s[1]], s[1]] : s); let logged = false;
     el.append(h('div', { class: 'crumbs', html: `<a href="#/lessons">Lessons</a> › ${U.parts[m.part].name}` }), h('h1', {}, '🎬 ' + m.title));
     const stage = h('div', { class: 'ls-stage' }), cap = h('div', { class: 'ls-cap' }), bar = h('div', { class: 'ls-bar' }), ctl = h('div', { class: 'ctrl ls-ctl' });
     const shell = h('div', { class: 'ls-shell' }, stage, cap, bar, ctl); el.append(shell);
@@ -75,9 +75,10 @@
       if (s[0] === 'q') {
         const [q, opts, a, ex] = s[1]; stage.append(h('h3', { class: 'ls-h' }, '❓ Quick check — the lesson waits for your answer'), h('div', { class: 'ls-q', html: q }));
         const ol = h('div', { class: 'opts' }); let done = false; const fb = h('div');
-        opts.forEach((o, k) => { const b = h('button', { class: 'opt', html: String.fromCharCode(65 + k) + '. ' + o, onclick: () => { if (done) return; done = true; b.classList.add(k === a ? 'right' : 'wrong'); ol.children[a].classList.add('right'); fb.innerHTML = `<div class="${k === a ? 'sol' : 'hint'}"><b>${k === a ? '✔ Correct.' : '✘ Answer ' + String.fromCharCode(65 + a) + '.'}</b> ${ex}</div>`; U.math(fb); prog[id].q[i] = k === a ? 1 : 0; saveLp(Object.assign(lp(), { [id]: prog[id] }));
+        opts.forEach((o, k) => { const b = h('button', { class: 'opt', html: String.fromCharCode(65 + k) + '. ' + o, onclick: () => { if (done) return; done = true; b.classList.add(k === a ? 'right' : 'wrong'); ol.children[a].classList.add('right'); fb.innerHTML = `<div class="${k === a ? 'sol' : 'hint'}"><b>${k === a ? '✔ Correct.' : '✘ Answer ' + String.fromCharCode(65 + a) + '.'}</b> ${ex}</div>`; U.math(fb); prog[id].q[i] = k === a ? 1 : 0; saveLp(Object.assign(lp(), { [id]: prog[id] })); U.track && U.track({ kind: 'lessonq', module: id, item: id + ':' + s[2], correct: k === a });
           stopSpeech = speak((k === a ? 'Correct. ' : 'Not quite. The answer is option ' + String.fromCharCode(65 + a) + '. ') + plain(ex), () => { if (playing) next(); }); } }); ol.append(b); });
         stage.append(h('div', { class: 'q' }, ol, fb)); U.math(stage); cap.textContent = 'Choose an option to continue.';
+        prog[id].seen = Math.max(prog[id].seen, i + 1); prog[id].n = scenes.length; saveLp(Object.assign(lp(), { [id]: prog[id] }));
         if (playing) stopSpeech = speak('Quick check. ' + plain(q) + ' ' + opts.map((o, k) => 'Option ' + String.fromCharCode(65 + k) + ': ' + plain(o) + '.').join(' '), () => { });
         return;
       }
@@ -91,11 +92,11 @@
       }
       prog[id].seen = Math.max(prog[id].seen, i + 1); prog[id].n = scenes.length; saveLp(Object.assign(lp(), { [id]: prog[id] }));
     };
-    const next = () => { if (i < scenes.length - 1) { i++; draw(); } else { pause(); stage.append(h('div', { class: 'sol', html: '<b>Lesson complete.</b> ' + (() => { const q = Object.values(prog[id].q); return q.length ? `Quick checks: ${q.filter(x => x).length}/${q.length} correct.` : ''; })() })); } };
+    const next = () => { if (i < scenes.length - 1) { i++; draw(); } else { pause(); if (!logged && U.track) { logged = true; U.track({ kind: 'lesson', module: id, score: scenes.length, total: scenes.length }); } stage.append(h('div', { class: 'sol', html: '<b>Lesson complete.</b> ' + (() => { const q = Object.values(prog[id].q); return q.length ? `Quick checks: ${q.filter(x => x).length}/${q.length} correct.` : ''; })() })); } };
     const go = k => { i = k; draw(); };
     const pause = () => { playing = false; btnPlay.textContent = '▶ Play'; clear(); if (ctx.reveal) ctx.reveal(1); };
     const resume = () => { playing = true; btnPlay.textContent = '⏸ Pause'; if ('speechSynthesis' in window && !S.voices.length) pickVoices(); draw(); };
-    U.onLeave(() => { playing = false; clear(); });
+    U.onLeave(() => { playing = false; clear(); if (!logged && prog[id].seen > 1 && U.track) U.track({ kind: 'lesson', module: id, score: prog[id].seen, total: scenes.length }); });
     draw();
     document.addEventListener('keydown', function kh(e) { if (!document.body.contains(shell)) { document.removeEventListener('keydown', kh); return; } if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return; if (e.key === ' ') { e.preventDefault(); playing ? pause() : resume(); } if (e.key === 'ArrowRight') go(Math.min(scenes.length - 1, i + 1)); if (e.key === 'ArrowLeft') go(Math.max(0, i - 1)); });
     el.append(h('p', { class: 'small muted' }, 'Keys: Space = play/pause, ← → = previous/next scene. Narration uses your device’s built-in voice (works offline once the app is installed). Choose an Indian-English voice in the Voice list if available.'));
